@@ -45,7 +45,12 @@ To play online, someone needs to run a server.
 
 Builds on Windows and Linux from the same sources. Requirements:
 
-* ReXGlue SDK 0.8.0.0 (built and installed, or a source tree)
+* SunJaycy's ReXGlue SDK fork,
+  [SunJaycy/GoldenEye-Recomp-rexglue](https://github.com/SunJaycy/GoldenEye-Recomp-rexglue)
+  (built and installed, or a source tree). The public ReXGlue 0.8.0 release
+  does not build this code: it has no `ReXApp::PersistConfig()`, and
+  `ImGuiDialog`'s destructor is not virtual, which the `override`s in
+  `ge_username.h` and `ge_postfx.h` rely on.
 * CMake 3.25 or newer
 * Ninja
 * Clang / LLVM -- the CMake presets use clang on both platforms, not MSVC
@@ -113,6 +118,17 @@ the build directory before starting:
     # Linux
     ln -s "$PWD/assets" out/build/linux-amd64-release/assets
     ./out/build/linux-amd64-release/GoldenEye
+
+On Linux, linking the `assets` folder itself is fine, but the folders
+*inside* it must be real folders, not symlinks (for example, an `assets`
+folder built from one link per item of the game folder). The SDK's directory
+listing currently treats a symlinked folder as a file, so nothing under it
+loads and the game sits on a black screen (rexglue/rexglue-sdk#478). Copy
+the game files, or hard-link them with `cp -al`.
+
+If RenderDoc's Vulkan layer is installed, it draws a
+"Capturing Vulkan" overlay over the game. Start the game with
+`VK_LOADER_LAYERS_DISABLE=VK_LAYER_RENDERDOC_Capture` to hide it.
 
 Only step 4 needs re-running while working on `src/`. Codegen only has to run
 again when `ge_manifest.toml` or `ge_config.toml` changes.
